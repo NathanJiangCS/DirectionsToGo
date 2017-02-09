@@ -48,6 +48,8 @@ def string_location_parsing(string):
 		else:
 			return start_location, ""
 """
+
+
 def forward_geocaching(loc1, loc2):
 	try:
 		loc1_data = {"scantext": loc1, "json":1}
@@ -55,6 +57,9 @@ def forward_geocaching(loc1, loc2):
 
 		resp1 = requests.post("http://geocoder.ca", loc1_data)
 		resp2 = requests.post("http://geocoder.ca", loc2_data)
+
+		print resp1.json()
+		print resp2.json()
 
 		start_data = resp1.json()
 		end_data = resp2.json()

@@ -1,2 +1,4 @@
 Flask>=0.8
 twilio>=3.3.6
+requests>=2.11.1
+googlemaps>=2.4.5
