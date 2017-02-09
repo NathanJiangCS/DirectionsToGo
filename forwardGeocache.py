@@ -1,7 +1,6 @@
 import requests
 
 """
-
 string_location_parsing takes the body of the SMS and parses it to extract the start
 and end location of the user. Using this, it will call the forward_geocaching function
 which will convert these two strings to valid addresses.
@@ -22,7 +21,6 @@ Currently, it can only handle "A to B" format strings.
 """
 
 def string_location_parsing(string):
-
 	start_substr = ""
 	end_substr = ""
 
@@ -31,10 +29,8 @@ def string_location_parsing(string):
 		start_substr = string[:string.find("to")]
 		end_substr = string[string.find("to")+2:]
 
-
 	if len(start_substr) and len(end_substr):
 		return forward_geocaching(start_substr, end_substr)
-
 	else:
 		return 1, None, None
 
@@ -91,7 +87,6 @@ def forward_geocaching(loc1, loc2):
 
 		return status, start_pos, end_pos
 
-	except RequestException as e:
+	except Exception as e:
 		print e
 		return 1, None, None
-
