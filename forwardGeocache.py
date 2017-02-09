@@ -87,6 +87,6 @@ def forward_geocaching(loc1, loc2):
 
 		return status, start_pos, end_pos
 
-	except Exception as e:
+	except requests.exceptions.RequestException as e:
 		print e
 		return 1, None, None

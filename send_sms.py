@@ -6,7 +6,9 @@ def send_sms(msg, number):
     server.starttls()
     try:
         server.login("directionstogo@gmail.com", "directions1234")
-    except Exception as e:
+    except SocketError as e:
+        print str(e)
+    except AuthError as e:
         print str(e)
 
     carrierList = ["@vmobile.ca",
