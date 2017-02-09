@@ -2,83 +2,96 @@ import requests
 
 """
 
-string_location_parsing takes a string parameter and returns 2 strings.
+string_location_parsing takes the body of the SMS and parses it to extract the start
+and end location of the user. Using this, it will call the forward_geocaching function
+which will convert these two strings to valid addresses.
 
-It takes the body of the SMS and parses it to extract the start
-and end location of the user. If one or both of the locations could
-not be determined, it will return an empty string for that location.
+parameters:
+	string:<string> - body of SMS
+
+return: (All in a tuple)
+	status:<int> - 0 if successful, 1 improper format, 2 couldn't find location
+	start_pos:<dict> or None - dictionary containing start location 
+							 - returns None if starting position cannot be found
+
+	end_pos:<dict> or None - dictionary containing end location 
+						   - returns None if ending position cannot be found
 
 Currently, it can only handle "A to B" format strings.
 
 """
 
-keywords = ["from","to","at"]
-
 def string_location_parsing(string):
 
-	start_location = None
-	end_location = None
+	start_substr = ""
+	end_substr = ""
 
 	#Handling "How can I get from A to B"
-	last_keyword_index = -1
-	for kw in keywords:
-		last_keyword_index = max(last_keyword_index, string.find(kw))
+	if "to" in string:
+		start_substr = string[:string.find("to")]
+		end_substr = string[string.find("to")+2:]
 
-	if (last_keyword_index == -1): 
-		return None, None
 
-	start_location = string[:last_keyword_index]
-	end_location = string[last_keyword_index:]
-
-	print start_location
-	print end_location
-
-	if start_location and end_location:
-		forward_geocaching(start_location, end_location)
-
-"""
-		start_location, end_location = 
-		return start_location, end_location
+	if len(start_substr) and len(end_substr):
+		return forward_geocaching(start_substr, end_substr)
 
 	else:
-		if start_location == None and end_location == None:
-			return "", ""
-		elif start_location == None:
-			return "", end_location
-		else:
-			return start_location, ""
-"""
+		return 1, None, None
+
 
 
 def forward_geocaching(loc1, loc2):
 	try:
-		loc1_data = {"scantext": loc1, "json":1}
-		loc2_data = {"scantext": loc2, "json":1}
+		#json:1 configures the response to be in json format
+		#country:canada gives a bias towards Canadian addresses
+		loc1_data = {"scantext": loc1, "json":1, "country":"canada"}
+		loc2_data = {"scantext": loc2, "json":1, "country":"canada"}
 
 		resp1 = requests.post("http://geocoder.ca", loc1_data)
 		resp2 = requests.post("http://geocoder.ca", loc2_data)
+		resp1 = resp1.json()
+		resp2 = resp2.json()
 
-		print resp1.json()
-		print resp2.json()
+		if "match" in resp1:
+			start_pos = resp1['match']
+			#If there are multiple matches, the results will be in a list
+			#Take the most confident result (at index 0)
+			if type(start_pos) == list:
+				start_pos = start_pos[0]
 
-		start_data = resp1.json()
-		end_data = resp2.json()
-		
-		start_pos = end_pos = ""		
-		if ("match" in start_pos):
-			start_pos = start_data['match']
+			#Check if the confidence in the geocoded location is greater than 0.5
+			#if the location is less than 0.5, we assume that a location is not found
+			if float(start_pos["confidence"]) > 0.5:
+				status = 0
+			else:
+				status = 2
+				start_pos = None
+		else:
+			status = 2
+			start_pos = None
 
-		if ("match" in end_pos):
 
-			end_pos = end_data['match']
+		if "match" in resp2:
+			end_pos = resp2['match']
+			#If there are multiple matches, the results will be in a list
+			#Take the most confident result (at index 0)
+			if type(end_pos) == list:
+				end_pos = end_pos[0]
+				
+			#Check if the confidence in the geocoded location is greater than 0.5
+			#if the location is less than 0.5, we assume that a location is not found
+			if float(end_pos["confidence"]) > 0.5:
+				status = 0
+			else:
+				status = 2
+				end_pos = None
+		else:
+			status = 2
+			end_pos = None
 
-		print start_data
-		print type(start_pos)
+		return status, start_pos, end_pos
 
-		print end_data
-		print type(end_pos)
-
-	except Exception as e:
+	except RequestException as e:
 		print e
+		return 1, None, None
 
-string_location_parsing("How do I get from 330 metcalfe ottawa to Mississauga")
