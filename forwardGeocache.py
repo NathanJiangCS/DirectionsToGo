@@ -2,7 +2,7 @@ import requests
 
 """
 
-string_location_parsing takes a string parameter and returns 2 strings.
+string_location_parsing takes a string parameter and returns an error code and 2 strings.
 
 It takes the body of the SMS and parses it to extract the start
 and end location of the user. If one or both of the locations could
@@ -25,16 +25,15 @@ def string_location_parsing(string):
 		last_keyword_index = max(last_keyword_index, string.find(kw))
 
 	if (last_keyword_index == -1): 
-		return None, None
+		return "ERROR", None, None
 
 	start_location = string[:last_keyword_index]
 	end_location = string[last_keyword_index:]
 
-	print start_location
-	print end_location
-
 	if start_location and end_location:
-		forward_geocaching(start_location, end_location)
+		return forward_geocaching(start_location, end_location)
+		
+	return "ERROR", None, None
 
 """
 		start_location, end_location = 
@@ -58,19 +57,20 @@ def forward_geocaching(loc1, loc2):
 		resp1 = requests.post("http://geocoder.ca", loc1_data)
 		resp2 = requests.post("http://geocoder.ca", loc2_data)
 
-		print resp1.json()
-		print resp2.json()
-
 		start_data = resp1.json()
 		end_data = resp2.json()
+		status = "FOUND"
 		
 		start_pos = end_pos = ""		
-		if ("match" in start_pos):
+		if ("match" in start_data):
 			start_pos = start_data['match']
+		else:
+			status = "ERROR"
 
-		if ("match" in end_pos):
-
+		if ("match" in end_data):
 			end_pos = end_data['match']
+		else:
+			status = "ERROR"
 
 		print start_data
 		print type(start_pos)
@@ -78,7 +78,9 @@ def forward_geocaching(loc1, loc2):
 		print end_data
 		print type(end_pos)
 
+		return status, start_pos, end_pos
+
 	except Exception as e:
 		print e
 
-string_location_parsing("How do I get from 330 metcalfe ottawa to Mississauga")
+print string_location_parsing("How do I get from 330 metcalfe ottawa to Mississauga")
