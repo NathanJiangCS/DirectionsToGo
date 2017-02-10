@@ -9,8 +9,6 @@ def send_sms(msg, number):
 		client.messages.create(from_="(647) 691 3881",
 						  to=number,
 						  body=msg)
-		return 0
 
 	except TwilioRestException as e:
 		print e
-		return 1

@@ -14,20 +14,15 @@ def sms():
 	number = request.form['From']
 	message_body = request.form['Body']
 
-	if message_body == "help":
-		help_message = """
-						Hi, welcome to Directions to Go! Text this number with a request saying something like: 
-						"How can I get from LOCATION A to LOCATION B" and we will help you find your way. When specifying
-						either locations, please include which city they are in for best results. Additionally, you can 
-						specify which method of transportation you wish to take including "transit", "driving", or "walking".
-					   """
+	number = number[2:]
+	message_body= message_body.strip()
+
+	if message_body == "?":
+		help_message = """Text this number with a request saying something like: "How can I get from LOCATION A to LOCATION B" and we will help you find your way."""
 
 		send_sms(help_message, number)
 	else:
 		status, origin, destination = string_location_parsing(message_body)
-		print status
-		print origin
-		print destination
 
 		if status == 2:
 			if origin == None and destination == None:
@@ -37,25 +32,26 @@ def sms():
 			else:
 				error_message = "Sorry, I couldn't find your destination location. Please also include which city it is in! "
 			
-			send_sms(error_message, number)
+			send_sms(error_message.strip(), number)
 
 		elif status == 1:
-			error_message = """
-							Sorry, I couldn't understand your request. Please make sure to format it as follows:
-							"How can I get from YOUR CURRENT LOCATION to YOUR DESTINATION."
-							"""
+			error_message = """Sorry, I couldn't understand your request. Please make sure to format it as follows: "How can I get from YOUR CURRENT LOCATION to YOUR DESTINATION." """
 
-			send_sms(error_message, number)
+			send_sms(error_message.strip(), number)
 
 		else:
 			directions = get_directions_from_maps(origin, destination)
-
-			send_sms(directions, number)
-
+			directions_message = ""
+			for each_step in directions:
+				if len(directions_message+each_step) > 160:
+					send_sms(directions_message.strip(), number)
+					directions_message = each_step
+				else:
+					directions_message += each_step
 
 	resp = twiml.Response()
 	return str(resp)
 
 if __name__ == "__main__":
 	app.run()
-    #send_sms("2am", '6475298960')
+

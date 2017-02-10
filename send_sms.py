@@ -31,4 +31,6 @@ def send_sms(msg, number):
     server.quit()
 
 
+#help_message = """Text this number with a request saying something like: "How can I get from LOCATION A to LOCATION B" and we will help you find your way."""
 
+#send_sms(help_message, "6477817918")
