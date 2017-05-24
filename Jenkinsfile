@@ -8,7 +8,7 @@ node("NathanPC") {
          }
          
          stage("Get Docker"){
-             sh "cat /tmp/Jenkins/workspace/python2-docker@tmp/*/script.sh"
+             sh "export PATH=$PATH:/usr/local/bin"
              sh "env"
              docker.image('python:2.7.13').inside {
                  stage("Test") {
