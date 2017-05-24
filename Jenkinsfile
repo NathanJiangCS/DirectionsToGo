@@ -8,7 +8,7 @@ node("master") {
          }
          
          stage("Get Docker"){
-             docker.image('python:2.7.13') {
+             docker.image('python:2.7.13').inside {
                  stage("Test") {
                     sh "pip -V"
                  }
