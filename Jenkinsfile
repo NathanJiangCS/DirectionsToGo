@@ -8,6 +8,7 @@ node("NathanPC") {
          }
          
          stage("Get Docker"){
+             sh "cat /tmp/Jenkins/workspace/python2-docker@tmp/*/script.sh"
              docker.image('python:2.7.13').inside {
                  stage("Test") {
                     sh "pip -V"
